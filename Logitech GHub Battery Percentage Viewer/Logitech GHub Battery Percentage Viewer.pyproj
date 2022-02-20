@@ -11,6 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Logitech GHub Battery Percentage Viewer</Name>
     <RootNamespace>Logitech GHub Battery Percentage Viewer</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +22,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="1.py" />
     <Compile Include="Logitech_GHub_Battery_Percentage_Viewer.py" />
     <Compile Include="module1.py">
       <SubType>Code</SubType>
