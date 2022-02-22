@@ -6,6 +6,12 @@ import json
 import tkinter as tk
 from tkinter import Label, Frame
 from threading import Thread
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
+
+
+
+
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -28,11 +34,16 @@ def enablePrint():
 # Activates the print block function
 #blockPrint()
 
+
+
+
+
+
 Chargestatus = []
 Chargestatus.append("0")
 Chargestatus.append("0")
 
-def Background_stuff(): 
+def Background_stuff():
     # import your script A
     a_file = str(os.path.expandvars('%LOCALAPPDATA%'))+ "/LGHUB/settings.db"
     print(a_file)
@@ -204,6 +215,7 @@ def GUI_stuff():
             charge915 = "🗲"
         G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%")
         G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%")
+
         root.after(1000, Refresher) # every second...
     CURRENTPERCENTAGES = []
     root = tk.Tk()
@@ -213,12 +225,67 @@ def GUI_stuff():
     root.configure(bg='grey') # Makes backgroud fo window grey
     root.wm_attributes("-topmost", True) # Makes the window always stay on top
     root.wm_attributes("-transparentcolor", "grey") # Makes the window background transparent
+
+
     with open(resource_path('Current_Percentage.txt'), 'r') as filehandle:
         CURRENTPERCENTAGES = json.load(filehandle)
     with open(resource_path('Current_Charge.txt'), 'r') as filehandle:
         CurrentCharge = json.load(filehandle)
+    
+    
     Draw()
     Refresher()
     root.mainloop()
+
+
+
+    
+
+    
+
+
+
+
+def exall():
+    
+    def exitall():
+        os._exit(0)
+
+    app = QApplication([])
+    app.setQuitOnLastWindowClosed(False)
+
+    # Create the icon
+    icon = QIcon(resource_path("battery.png"))
+
+    # Create the tray
+    tray = QSystemTrayIcon()
+    tray.setIcon(icon)
+    tray.setVisible(True)
+
+    # Create the menu
+    menu = QMenu()
+    action = QAction("first")
+    
+
+    # Add a Quit option to the menu.
+    quit = QAction("Quit")
+    quit.triggered.connect(app.exit())
+    
+
+    action2 = QAction("Exit")
+    action2.triggered.connect(exitall)
+    menu.addAction(action2)
+
+    # Add the menu to the tray
+    tray.setContextMenu(menu)
+
+    app.exec()
+    
+
+
+
 Thread(target = Background_stuff).start() 
+
 Thread(target = GUI_stuff).start()
+
+Thread(target = exall).start()
