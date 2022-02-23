@@ -168,6 +168,7 @@ def Background_stuff():
                 json.dump(Chargestatus, c)           
             time.sleep(1)
 def GUI_stuff():
+    global hideshow
     global quitmain
     global loc
     def Draw():
@@ -180,12 +181,29 @@ def GUI_stuff():
         G502=tk.Label(frame,text=CURRENTPERCENTAGES, bg="grey", fg="white")
         G502.pack()
     def Refresher():
+        global showhidestate
+        global hideshow
         global quitmain
         global loc
         global G915
         global G502
+        if hideshow == 0:
+            print("root.withdraw()")
+            root.withdraw()
+            showhidestate = 1
+        if hideshow == 1:
+            print("root.update()")
+            root.update()
+            root.deiconify()
+            showhidestate = 0
         if quitmain == True:
             sys.exit()
+        def show():
+            root.update()
+            root.deiconify()
+        def hide():
+            root.withdraw()
+        
         with open(resource_path('Current_Percentage.txt'), 'r') as filehandle:
             CURRENTPERCENTAGES = json.load(filehandle)
         with open(resource_path('Current_Charge.txt'), 'r') as c:
@@ -235,9 +253,20 @@ def GUI_stuff():
     Refresher()
     root.mainloop()
 def Tray_stuff():
+    global hideshow
+    global showhidestate
     global quitmain
     global loc
     win=tk.Tk()
+    def showhide():
+        global hideshow
+        global showhidestate
+        if showhidestate == 1:
+            print("hideshow = 1")
+            hideshow = 1
+        if showhidestate == 0:
+            print("hideshow = 0")
+            hideshow = 0
     def quit_window(icon, item):
         global quitmain
         quitmain = True
@@ -259,12 +288,14 @@ def Tray_stuff():
     def hide_window():
        win.withdraw()
        image=Image.open(resource_path('battery.ico'))
-       menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))))
+       menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))), item('Show/Hide', showhide))
        icon=pystray.Icon("name", image, "Battery Viewer", menu)
        icon.run()
     win.protocol('WM_DELETE_WINDOW', hide_window)
     hide_window()
     win.mainloop()
+hideshow = 1
+showhidestate = 1
 quitmain = False
 if quitmain == True:
     sys.exit()
