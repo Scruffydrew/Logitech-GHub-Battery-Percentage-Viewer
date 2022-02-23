@@ -286,11 +286,11 @@ def Tray_stuff():
         global loc
         loc = "150x150-1839+999"
     def hide_window():
-       win.withdraw()
-       image=Image.open(resource_path('battery.ico'))
-       menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))), item('Show/Hide', showhide))
-       icon=pystray.Icon("name", image, "Battery Viewer", menu)
-       icon.run()
+        win.withdraw()
+        image=Image.open(resource_path('battery.ico'))
+        menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))), item('Show/Hide', showhide))
+        icon=pystray.Icon("name", image, "Battery Viewer", menu)
+        icon.run()
     win.protocol('WM_DELETE_WINDOW', hide_window)
     hide_window()
     win.mainloop()
