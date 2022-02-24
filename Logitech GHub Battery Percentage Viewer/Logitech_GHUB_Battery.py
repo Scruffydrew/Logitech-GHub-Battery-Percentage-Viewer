@@ -203,7 +203,6 @@ def GUI_stuff():
             root.deiconify()
         def hide():
             root.withdraw()
-        
         with open(resource_path('Current_Percentage.txt'), 'r') as filehandle:
             CURRENTPERCENTAGES = json.load(filehandle)
         with open(resource_path('Current_Charge.txt'), 'r') as c:
