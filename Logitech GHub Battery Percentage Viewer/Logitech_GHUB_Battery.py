@@ -11,13 +11,13 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-Background_stuff_DEBUG = True    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
-GUI_stuff_DEBUG = False           # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+Background_stuff_DEBUG = False    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+GUI_stuff_DEBUG = True           # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 Tray_stuff_DEBUG = False          # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 
-Chargestatus = []
-Chargestatus.append("0")
-Chargestatus.append("0")
+Chargestatus = []   # Create list called Chargestatus
+Chargestatus.append("0")    # set first item in list to 0
+Chargestatus.append("0")    # set second item in list to 0
 def Background_stuff():
     global Background_stuff_DEBUG
     global quitmain
@@ -162,7 +162,7 @@ def Background_stuff():
                 json.dump(NEWlist, filehandle)
             with open(resource_path('Current_Charge.txt'), 'w') as c:
                 json.dump(Chargestatus, c)           
-            time.sleep(1)
+            time.sleep(10)
 def GUI_stuff():
     global counter
     global GUI_stuff_DEBUG
