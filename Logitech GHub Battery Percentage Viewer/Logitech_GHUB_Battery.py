@@ -1,13 +1,7 @@
-import re
-import sys
-import os
-import time
-import json
-import tkinter as tk
+import re, sys, os, time, json, pystray, tkinter as tk
 from tkinter import Label, Frame
 from threading import Thread
 from pystray import Menu, MenuItem as item
-import pystray
 from PIL import Image, ImageTk
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -17,21 +11,21 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-# Stop the print command from showing up in the console
-def blockPrint():
-    sys.stdout = open(os.devnull, 'w')
-# Allow the print command to show up in console again
-def enablePrint():
-    sys.stdout = sys.__stdout__
-# Activates the print block function
-#blockPrint()
+Background_stuff_DEBUG = True    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+GUI_stuff_DEBUG = False           # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+Tray_stuff_DEBUG = False          # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+
 Chargestatus = []
 Chargestatus.append("0")
 Chargestatus.append("0")
 def Background_stuff():
+    global Background_stuff_DEBUG
     global quitmain
-    a_file = str(os.path.expandvars('%LOCALAPPDATA%'))+ "/LGHUB/settings.db"
-    print(a_file)
+    def log(s):
+        if Background_stuff_DEBUG == True:
+            print(s)
+    a_file = str(os.path.expandvars('%LOCALAPPDATA%'))+ "/LGHUB/settings.db"    # Gets the filepath for the Logitech GHub settings which contains the values for the battery percentages
+    log(a_file)
     percentage = str("percentage")
     G502 = str("battery/g502wireless/percentage")
     G915 = str("battery/g915/percentage")
@@ -43,7 +37,11 @@ def Background_stuff():
     file = resource_path('listfile.txt')
     Chargestatus[0] = "0"
     Chargestatus[1] = "0"
+    counter = 1
     while True:
+        counter = counter + 1
+        runcount = 'Counter: ', counter
+        log(runcount)
         if quitmain == True:
             sys.exit()
         list = []
@@ -54,7 +52,7 @@ def Background_stuff():
         f = open(a_file, errors="ignore")
         for line in f:
             if G502 in line:
-                print(line)
+                log(line)
                 line = re.findall(r'\d+', line)
                 line = str(line); line = line[2:]; line = line[:-2]
                 list.append(line)
@@ -63,7 +61,7 @@ def Background_stuff():
                     if timeline in followline:
                         followline = listhide
                     else:
-                        print(followline)
+                        log(followline)
                         if charging in followline:
                             del Chargestatus[0]
                             Chargestatus.insert(0, '1')
@@ -72,7 +70,7 @@ def Background_stuff():
                     followline = str(followline); followline = followline[2:]; followline = followline[:-2]
                     list.append(followline)
             if G915 in line:
-                print(line)
+                log(line)
                 line = re.findall(r'\d+', line)
                 line = str(line); line = line[2:]; line = line[:-2]
                 list.append(line)
@@ -81,7 +79,7 @@ def Background_stuff():
                     if timeline in followline:
                         followline = listhide
                     else:
-                        print(followline)
+                        log(followline)
                         if charging in followline:
                             del Chargestatus[1]
                             Chargestatus.append("1")
@@ -90,35 +88,34 @@ def Background_stuff():
                     followline = str(followline); followline = followline[2:]; followline = followline[:-2]
                     list.append(followline)
         if not list:
-            print("List is empty")
+            log("List is empty")
             with open(resource_path('listfile.txt'), 'r') as filehandle:
                 TEMPlist = json.load(filehandle)
             TEMPlist = NEWlist
-            print(TEMPlist)
-            print(NEWlist)
+            log(TEMPlist)
+            log(NEWlist)
         else:
-            print("List is not Empty")
-            print(list)            
+            log("List is not Empty")
+            log(list)            
             NEWlist = [x for x in list if int(x) <= 915]
-            print(NEWlist)
+            log(NEWlist)
             G502_Found = 0
             G915_Found = 0
             G502_Check = NEWlist[0]
             G915_Check = NEWlist[0]
             if G502_Check == str(502):
-                print("G502 Check")
+                log("G502 Check")
                 list.remove(listhide)
                 G502_Found = 1
             else:
                 if G915_Check == str(915):
-                    print("G915 Check")
+                    log("G915 Check")
                     list.remove(listhide)
                     G915_Found = 1
             if G502_Found == 1:
-                print("G502 Found")
+                log("G502 Found")
                 if len(NEWlist) == 4:
-                    print("NEWlist = 4")
-                    #list.remove(listhide)
+                    log("NEWlist = 4")
                     if NEWlist[-2] == str(915):
                         with open(resource_path('listfile.txt'), 'w') as filehandle:
                             json.dump(NEWlist, filehandle)
@@ -130,36 +127,35 @@ def Background_stuff():
                         pos1, pos2 = -1, -2
                         swapPositions(NEWlist, pos1=1, pos2=1)
                 else:
-                    print("NEWlist = 2")
+                    log("NEWlist = 2")
                     with open(resource_path('listfile.txt'), 'r') as filehandle:
                         TEMPlist = json.load(filehandle)
                     NEWlist.append(TEMPlist[-2])
                     NEWlist.append(TEMPlist[-1])
-                    print(NEWlist)
+                    log(NEWlist)
                     if NEWlist[-1] == str(915):
-                        print("Rearranging")
+                        log("Rearranging")
                         def swapPositions(list, pos1, pos2):
                             get = NEWlist[pos1], NEWlist[pos2]
                             NEWlist[pos2], NEWlist[pos1] = get
                             return NEWlist
                         pos1, pos2 = -1, -2
                         swapPositions(NEWlist, pos1=1, pos2=1)
-                    print(NEWlist)
+                    log(NEWlist)
                     with open(resource_path('listfile.txt'), 'w') as filehandle:
                         json.dump(NEWlist, filehandle)
             else:
                 if G915_Found == 1:
-                    print("G915 Found")
+                    log("G915 Found")
                     if len(NEWlist) == 2:
                         with open(resource_path('listfile.txt'), 'r') as filehandle:
                             TEMPlist = json.load(filehandle)
                     NEWlist.insert(0, TEMPlist[1])
                     NEWlist.insert(0, TEMPlist[0])
-                    print(NEWlist)
+                    log(NEWlist)
                     with open(resource_path('listfile.txt'), 'w') as filehandle:
                         json.dump(NEWlist, filehandle)
-            #enablePrint()
-            print(NEWlist)
+            log(NEWlist)
             with open(resource_path('listfile.txt'), 'w') as filehandle:
                 json.dump(NEWlist, filehandle)
             with open(resource_path('Current_Percentage.txt'), 'w') as filehandle:
@@ -168,9 +164,16 @@ def Background_stuff():
                 json.dump(Chargestatus, c)           
             time.sleep(1)
 def GUI_stuff():
+    global counter
+    global GUI_stuff_DEBUG
+    global showhidestate
     global hideshow
     global quitmain
     global loc
+    counter = 1
+    def log(s):
+        if GUI_stuff_DEBUG == True:
+            print(s)
     def Draw():
         global G915
         global G502
@@ -181,6 +184,7 @@ def GUI_stuff():
         G502=tk.Label(frame,text=CURRENTPERCENTAGES, bg="grey", fg="white")
         G502.pack()
     def Refresher():
+        global counter
         global showhidestate
         global hideshow
         global quitmain
@@ -188,11 +192,11 @@ def GUI_stuff():
         global G915
         global G502
         if hideshow == 0:
-            print("root.withdraw()")
+            log("root.withdraw()")
             root.withdraw()
             showhidestate = 1
         if hideshow == 1:
-            print("root.update()")
+            log("root.update()")
             root.update()
             root.deiconify()
             showhidestate = 0
@@ -205,19 +209,19 @@ def GUI_stuff():
             root.withdraw()
         with open(resource_path('Current_Percentage.txt'), 'r') as filehandle:
             CURRENTPERCENTAGES = json.load(filehandle)
-        with open(resource_path('Current_Charge.txt'), 'r') as c:
-            CurrentCharge = json.load(c)
-        print(CurrentCharge)
-        print(CURRENTPERCENTAGES)
+        with open(resource_path('Current_Charge.txt'), 'r') as filehandle:
+            CurrentCharge = json.load(filehandle)
+        log(CurrentCharge)
+        log(CURRENTPERCENTAGES)
         charge502 = "    "
         charge915 = "    "
-        print(CurrentCharge[0] +" 0")
-        print(CurrentCharge[1] +" 1")
+        log(CurrentCharge[0] +" 0")
+        log(CurrentCharge[1] +" 1")
         if CurrentCharge[0] == "1":
-            print(1)
+            log("G502: " + charge502)
             charge502 = "🗲"
         if CurrentCharge[1] == "1":
-            print(2)
+            log("G915: " + charge915)
             charge915 = "🗲"
         if loc == "150x150-1839+999":
             G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 7))
@@ -235,7 +239,10 @@ def GUI_stuff():
                         G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 9))
                         G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%", font=("Segoe UI", 9))
         root.geometry(loc) # Sets the size of the window
-        root.after(1000, Refresher) # every second...
+        counter = counter + 1
+        runcount = 'Counter: ', counter
+        log(runcount)
+        root.after(1000, Refresher) # every second it reruns the code in the Refresher
     CURRENTPERCENTAGES = []
     root = tk.Tk()
     root.title("Logitech GHub Battery Viewer")# Names the Tk root window
@@ -252,19 +259,23 @@ def GUI_stuff():
     Refresher()
     root.mainloop()
 def Tray_stuff():
+    global Tray_stuff_DEBUG
     global hideshow
     global showhidestate
     global quitmain
     global loc
+    def log(s):
+        if Tray_stuff_DEBUG == True:
+            print(s)
     win=tk.Tk()
     def showhide():
         global hideshow
         global showhidestate
         if showhidestate == 1:
-            print("hideshow = 1")
+            log("hideshow = 1  ,  Window is now Visible")
             hideshow = 1
         if showhidestate == 0:
-            print("hideshow = 0")
+            log("hideshow = 0  ,  Window is now Hidden")
             hideshow = 0
     def quit_window(icon, item):
         global quitmain
@@ -285,11 +296,12 @@ def Tray_stuff():
         global loc
         loc = "150x150-1839+999"
     def hide_window():
+        global visibility
         win.withdraw()
         image=Image.open(resource_path('battery.ico'))
-        menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))), item('Show/Hide', showhide))
+        menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))), item('Hide/Show', showhide))
         icon=pystray.Icon("name", image, "Battery Viewer", menu)
-        icon.run()
+        icon.run()   
     win.protocol('WM_DELETE_WINDOW', hide_window)
     hide_window()
     win.mainloop()
