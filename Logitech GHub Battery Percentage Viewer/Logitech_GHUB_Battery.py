@@ -38,7 +38,12 @@ def Background_stuff():
     Chargestatus[0] = "0"
     Chargestatus[1] = "0"
     counter = 1
-    while True:
+    def looper():
+        global Background_stuff_DEBUG
+        global quitmain
+        def log(s):
+            if Background_stuff_DEBUG == True:
+                print(s)
         counter = counter + 1
         runcount = 'Counter: ', counter
         log(runcount)
@@ -163,6 +168,7 @@ def Background_stuff():
             with open(resource_path('Current_Charge.txt'), 'w') as c:
                 json.dump(Chargestatus, c)           
             time.sleep(10)
+            looper()
 def GUI_stuff():
     global counter
     global GUI_stuff_DEBUG
