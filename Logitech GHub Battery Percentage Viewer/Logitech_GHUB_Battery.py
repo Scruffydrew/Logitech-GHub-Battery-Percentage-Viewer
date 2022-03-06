@@ -25,21 +25,16 @@ def resource_path(relative_path):
         return edited_path
 DEBUG = True    # Defines what values to use for the location of files,,, set to False when freezing code
 Background_stuff_DEBUG = True    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
-GUI_stuff_DEBUG = True           # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
-Tray_stuff_DEBUG = False          # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
-
-Chargestatus = []   # Create list called Chargestatus
-Chargestatus.append("0")    # set first item in list to 0
-Chargestatus.append("0")    # set second item in list to 0
-    
-if Background_stuff_DEBUG == True:      # Prints current active status of Background stuff
+GUI_stuff_DEBUG = True    # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+Tray_stuff_DEBUG = False    # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console 
+if Background_stuff_DEBUG == True:    # Prints current active status of Background stuff
     print("Background_stuff_DEBUG is Active")
 if GUI_stuff_DEBUG == True:     # Prints current active status of GUI stuff
     print("GUI_stuff_DEBUG is Active")
 if Tray_stuff_DEBUG == True:    # Prints current active status of Tray stuff
     print("Tray_stuff_DEBUG is Active")
 def Background_stuff():
-    global refresheractive
+    global GUI_stuff_DEBUG
     global a_file
     global percentage
     global G502line
@@ -57,8 +52,6 @@ def Background_stuff():
     def log(s):
         if Background_stuff_DEBUG == True:
             print(s)
-    timeline = "time"
-    charging = "isCharging"
     if quitmain == True:
         sys.exit()
     list = []
@@ -108,7 +101,7 @@ def Background_stuff():
         log("List is empty")            # Print
         with open(resource_path('listfile.txt'), 'r') as filehandle:
             TEMPlist = json.load(filehandle)
-        TEMPlist = NEWlist
+        NEWlist = TEMPlist
         log("TEMPlist = " + str(TEMPlist))           # Print
         log("NEWlist = " + str(NEWlist))         # Print
     else:
@@ -169,7 +162,7 @@ def Background_stuff():
                         TEMPlist = json.load(filehandle)
                 NEWlist.insert(0, TEMPlist[1])
                 NEWlist.insert(0, TEMPlist[0])
-                log("NEWlist = " + NEWlist)         # Print
+                log("NEWlist = " + str(NEWlist))         # Print
                 with open(resource_path('listfile.txt'), 'w') as filehandle:
                     json.dump(NEWlist, filehandle)
         log("NEWlist = " + str(NEWlist))            # Print
@@ -179,11 +172,12 @@ def Background_stuff():
             json.dump(NEWlist, filehandle)
         with open(resource_path('Current_Charge.txt'), 'w') as c:
             json.dump(Chargestatus, c)
-    time.sleep(1)
-    refresheractive = 1
+    time.sleep(0)
+    if GUI_stuff_DEBUG == False:
+        global spacer
+        log(spacer + 'Counter: ' + str(counter))            # Print
     log("Refresher")            # Print
     Refresher()
-
 def Tray_stuff():
     global Tray_stuff_DEBUG
     global hideshow
@@ -231,7 +225,6 @@ def Tray_stuff():
     win.protocol('WM_DELETE_WINDOW', hide_window)
     hide_window()
     win.mainloop()    
-
 def log(s):
     if GUI_stuff_DEBUG == True:
         print(s)
@@ -245,6 +238,7 @@ def Draw():
     G502=tk.Label(frame,text=CURRENTPERCENTAGES, bg="grey", fg="white")
     G502.pack()
 def Refresher():
+    global spacer
     global counter
     global showhidestate
     global hideshow
@@ -279,10 +273,10 @@ def Refresher():
     log(CurrentCharge[0] +" < first item in list")          # Print
     log(CurrentCharge[1] +" < second item in list")         # Print
     if CurrentCharge[0] == "1":
-        log("G502: " + charge502)           # Print
+        log("G502: " + charge502 + "🗲")           # Print
         charge502 = "🗲"
     if CurrentCharge[1] == "1":
-        log("G915: " + charge915)           # Print
+        log("G915: " + charge915 + "🗲")           # Print
         charge915 = "🗲"
     if loc == "150x150-1839+999":
         G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 7))
@@ -301,12 +295,15 @@ def Refresher():
                     G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%", font=("Segoe UI", 9))
     root.geometry(loc) # Sets the size of the window
     counter = counter + 1
-    spacer = "                                                                           "
+    spacer = "                                                                           "      # Used to make the counter stand out in the console, to make it easier to see
     log(spacer + 'Counter: ' + str(counter))           # Print
     root.after(1000, Background_stuff) # every second it reruns the code in the Refresher
+Chargestatus = []   # Create list called Chargestatus
+Chargestatus.append("0")    # set first item in list to 0
+Chargestatus.append("0")    # set second item in list to 0
 counter = 0
 a_file = str(os.path.expandvars('%LOCALAPPDATA%'))+ "/LGHUB/settings.db"    # Gets the filepath for the Logitech GHub settings which contains the values for the battery percentages
-log(a_file)         # Print
+print(a_file)         # Print
 percentage = str("percentage")      # Line in a_file containing the word percentage
 G502line = str("battery/g502wireless/percentage")       # Line in a_file containing battery/g502wireless/percentage,,, Used to determine which device the following info is in regards to
 G915line = str("battery/g915/percentage")       # Line in a_file containing battery/g915/percentage,,, Used to determine which device the following info is in regards to
