@@ -23,7 +23,8 @@ def resource_path(relative_path):
             unedited_path = os.path.join(edited_base_path, relative_path)
             edited_path = unedited_path.replace('\\' , '/')
         return edited_path
-DEBUG = True    # Defines what values to use for the location of files,,, set to False when freezing code
+DEBUG = False    # Defines what values to use for the location of files 
+""" Set DEBUG to False when freezing code """
 Background_stuff_DEBUG = True    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 GUI_stuff_DEBUG = True    # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 Tray_stuff_DEBUG = False    # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console 
@@ -58,7 +59,6 @@ def Background_stuff():
     NEWlist = []
     Chargestatus[0] = "0"
     Chargestatus[1] = "0"
-    Charging_Found = False
     f = open(a_file, errors="ignore")
     for line in f:
         if G502line in line:
@@ -107,6 +107,8 @@ def Background_stuff():
     else:
         log("List is not Empty")            # Print
         log("list = " + str(list))           # Print
+        while("" in list):
+            list.remove("")     # Remove empty strings from list
         NEWlist = [x for x in list if int(x) <= 915]
         log("NEWlist = " + str(NEWlist))         # Print
         G502_Found = 0
