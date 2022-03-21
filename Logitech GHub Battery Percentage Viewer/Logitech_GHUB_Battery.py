@@ -248,10 +248,22 @@ def Tray_stuff():
             curX = curloc[2]
             curY = curloc[3]
             currentloc.config(text="Current location: "+"X: "+str(curX)+"  "+"Y: "+str(curY))
+        lastClickX = 0
+        lastClickY = 0
+        def SaveLastClickPos(event):
+            global lastClickX, lastClickY
+            lastClickX = event.x
+            lastClickY = event.y
+        def Dragging(event):
+            x, y = event.x - lastClickX + root1.winfo_x(), event.y - lastClickY + root1.winfo_y()
+            root1.geometry("+%s+%s" % (x , y))
         root1 = Toplevel()
         root1.title("Logitech GHub Battery Viewer")# Names the Tk root window
         root1.overrideredirect(1) # Removes title bar from window
         root1.wm_attributes("-topmost", True) # Makes the window always stay on top
+        root1.geometry("+%s+%s" % (0 , 0))
+        root1.bind('<Button-1>', SaveLastClickPos)
+        root1.bind('<B1-Motion>', Dragging)
         titletext=tk.Label(root1, text="Custom Location")
         titletext.grid(row = 1, column = 0, pady = 2, columnspan = 4)
         Xtext=tk.Label(root1, text="X:")
