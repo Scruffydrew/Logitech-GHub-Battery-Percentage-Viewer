@@ -1,5 +1,5 @@
 import re, sys, os, time, json, pystray, tkinter as tk
-from tkinter import Label, Frame, Entry, Radiobutton, StringVar, Toplevel
+from tkinter import Label, Frame, Entry, Toplevel
 from threading import Thread
 from pystray import Menu, MenuItem as item
 from PIL import Image, ImageTk
