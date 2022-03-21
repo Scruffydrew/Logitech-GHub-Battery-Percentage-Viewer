@@ -1,8 +1,9 @@
 import re, sys, os, time, json, pystray, tkinter as tk
-from tkinter import Label, Frame
+from tkinter import Label, Frame, Entry, Radiobutton, StringVar, Toplevel
 from threading import Thread
 from pystray import Menu, MenuItem as item
 from PIL import Image, ImageTk
+from screeninfo import get_monitors
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     global DEBUG
@@ -23,10 +24,10 @@ def resource_path(relative_path):
             unedited_path = os.path.join(edited_base_path, relative_path)
             edited_path = unedited_path.replace('\\' , '/')
         return edited_path
-DEBUG = False    # Defines what values to use for the location of files 
+DEBUG = True    # Defines what values to use for the location of files 
 """ Set DEBUG to False when freezing code """
-Background_stuff_DEBUG = True    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
-GUI_stuff_DEBUG = True    # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+Background_stuff_DEBUG = False    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+GUI_stuff_DEBUG = False    # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 Tray_stuff_DEBUG = False    # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console 
 if Background_stuff_DEBUG == True:    # Prints current active status of Background stuff
     print("Background_stuff_DEBUG is Active")
@@ -205,23 +206,102 @@ def Tray_stuff():
         icon.stop()
         win.destroy()
         os._exit()
-    def loc1():
+    def loc1():         # Bottom
         global loc
         loc = "150x150-1930+1029"
-    def loc2():
+    def loc2():         # Top
         global loc
         loc = "150x150-1930-941"
-    def loc3():
+    def loc3():         # Left
         global loc
         loc = "150x150-3697+999"
-    def loc4():
+    def loc4():         # Right
         global loc
         loc = "150x150-1839+999"
+    def CustomLoc():
+        global loc
+        def SelectCom():
+            global loc
+            global MonXval
+            global MonYval
+            locXval = locXin.get()
+            locYval = locYin.get()
+            if '-' not in locXval:
+                locX = "+" + locXval
+            else:
+                locX = locXval
+            if '-' not in locYval:
+                locY = "+" + locYval
+            else:
+                locY = locYval
+            loc = "150x150" + locX + locY
+            print("                                                                                               " + loc)
+        def CancelCom():
+            root1.withdraw()
+        def selection():
+            curloc = re.findall(r'-?\d+', loc)
+            print(curloc)
+            print(curloc[2]+"waddle")
+            curloc = re.findall(r'-?\d+', loc)
+            print(curloc)
+            print(curloc[2]+"waddle")
+            curX = curloc[2]
+            curY = curloc[3]
+            currentloc.config(text="Current location: "+"X: "+str(curX)+"  "+"Y: "+str(curY))
+        root1 = Toplevel()
+        root1.title("Logitech GHub Battery Viewer")# Names the Tk root window
+        root1.overrideredirect(1) # Removes title bar from window
+        root1.wm_attributes("-topmost", True) # Makes the window always stay on top
+        titletext=tk.Label(root1, text="Custom Location")
+        titletext.grid(row = 1, column = 0, pady = 2, columnspan = 4)
+        Xtext=tk.Label(root1, text="X:")
+        Xtext.grid(row = 2, column = 1, pady = 2, sticky="e")
+        locXin = Entry(root1, font=('calibre',10,'normal'), show = None)
+        locXin.grid(row = 2, column = 2, pady = 2)
+        Ytext=tk.Label(root1, text="Y:")
+        Ytext.grid(row = 3, column = 1, pady = 2, sticky="e")
+        locYin = Entry(root1, font=('calibre',10,'normal'), show = None)
+        locYin.grid(row = 3, column = 2, pady = 2)
+        monitorlist = []
+        for m in get_monitors():
+            print(m)
+            monitorlist.append(m)
+        print(monitorlist)
+        monlistlen = len(monitorlist)
+        level = -1
+        newmonlist = []
+        list123 = []
+        dislist = []
+        current = 0
+        currentt = -1
+        for i in range(monlistlen):
+            level = level + 1
+            dislisttext = "Display " + str(level)
+            dislist.append(dislisttext)
+            print(dislisttext)
+            print(dislist)
+            monlistitem = str(monitorlist[level])
+            sep = ", width_mm="
+            stripped = monlistitem.split(sep, 1)[0]
+            newmonlist.append(stripped)
+            print(stripped)
+            newitems = re.findall(r'-?\d+', stripped)
+            list123.append(newitems)
+            print(list123)
+        curX = ""
+        curY = ""
+        currentloc=tk.Label(root1, text="Current location: "+"X: "+str(curX)+"  "+"Y: "+str(curY))
+        currentloc.grid(row = 7, column = 0, pady = 2, columnspan = 4)
+        selection()
+        ButtonSel=tk.Button(root1, text="Select", bg="grey", fg="white", command=SelectCom)
+        ButtonSel.grid(row = 10, column = 3, pady = 2, padx = 2, sticky="e")
+        ButtonClose=tk.Button(root1, text="Close", bg="grey", fg="white", command=CancelCom)
+        ButtonClose.grid(row = 10, column = 0, pady = 2, padx = 2, columnspan = 2)
     def hide_window():
         global visibility
         win.withdraw()
         image=Image.open(resource_path('battery.ico'))
-        menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4))), item('Hide/Show', showhide))
+        menu=(item('Quit', quit_window), item("Location:", Menu(item('Bottom', loc1), item('Top', loc2), item('Left', loc3), item('Right', loc4), item('Custom', CustomLoc))), item('Hide/Show', showhide))
         icon=pystray.Icon("name", image, "Battery Viewer", menu)
         icon.run()   
     win.protocol('WM_DELETE_WINDOW', hide_window)
