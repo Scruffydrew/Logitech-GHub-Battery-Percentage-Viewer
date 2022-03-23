@@ -1,5 +1,5 @@
-import re, sys, os, time, json, pystray, tkinter as tk
-from tkinter import Label, Frame, Entry, Toplevel
+import re, sys, os, time, json, pystray, colorsys, keyboard, tkinter as tk
+from tkinter import Label, Frame, Entry, Toplevel, Button, LabelFrame
 from threading import Thread
 from pystray import Menu, MenuItem as item
 from PIL import Image, ImageTk
@@ -28,13 +28,19 @@ DEBUG = True    # Defines what values to use for the location of files
 """ Set DEBUG to False when freezing code """
 Background_stuff_DEBUG = False    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 GUI_stuff_DEBUG = False    # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
-Tray_stuff_DEBUG = False    # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console 
+Tray_stuff_DEBUG = False    # Debug for Tray_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
+Colour_stuff_DEBUG = False
+Tray_Custom_stuff_DEBUG = False
 if Background_stuff_DEBUG == True:    # Prints current active status of Background stuff
     print("Background_stuff_DEBUG is Active")
 if GUI_stuff_DEBUG == True:     # Prints current active status of GUI stuff
     print("GUI_stuff_DEBUG is Active")
 if Tray_stuff_DEBUG == True:    # Prints current active status of Tray stuff
     print("Tray_stuff_DEBUG is Active")
+if Colour_stuff_DEBUG == True:    # Prints current active status of Colour stuff
+    print("Colour_stuff_DEBUG is Active")
+if Tray_Custom_stuff_DEBUG == True:    # Prints current active status of Custom Location stuff
+    print("Tray_Custom_stuff_DEBUG is Active")
 def Background_stuff():
     global GUI_stuff_DEBUG
     global a_file
@@ -182,6 +188,7 @@ def Background_stuff():
     log("Refresher")            # Print
     Refresher()
 def Tray_stuff():
+    global frame1
     global Tray_stuff_DEBUG
     global hideshow
     global showhidestate
@@ -206,20 +213,25 @@ def Tray_stuff():
         icon.stop()
         win.destroy()
         os._exit()
-    def loc1():         # Bottom
+    def loc1():         # Bottom Location
         global loc
         loc = "150x150-1930+1029"
-    def loc2():         # Top
+    def loc2():         # Top Location
         global loc
         loc = "150x150-1930-941"
-    def loc3():         # Left
+    def loc3():         # Left Location
         global loc
         loc = "150x150-3697+999"
-    def loc4():         # Right
+    def loc4():         # Right Location
         global loc
         loc = "150x150-1839+999"
     def CustomLoc():
         global loc
+        global Tray_Custom_stuff_DEBUG
+        global Colour_stuff_DEBUG
+        def log(s):
+                if Tray_Custom_stuff_DEBUG == True:
+                    print(s)
         def SelectCom():
             global loc
             global MonXval
@@ -234,81 +246,135 @@ def Tray_stuff():
                 locY = "+" + locYval
             else:
                 locY = locYval
-            loc = "150x150" + locX + locY
-            print("                                                                                               " + loc)
+            loctest = "150x150" + locX + locY
+            if loctest != "150x150++":
+                loc = "150x150" + locX + locY
+            log("                                                                                               " + loc)           # Print
         def CancelCom():
             root1.withdraw()
         def selection():
-            curloc = re.findall(r'-?\d+', loc)
-            print(curloc)
-            print(curloc[2]+"waddle")
-            curloc = re.findall(r'-?\d+', loc)
-            print(curloc)
-            print(curloc[2]+"waddle")
+            curloc = re.findall(r'-?\d+', loc)      # Extract all numbers into a list
+            log(curloc)           # Print
+            log(curloc[2]+" :curloc[2]")           # Print
             curX = curloc[2]
             curY = curloc[3]
             currentloc.config(text="Current location: "+"X: "+str(curX)+"  "+"Y: "+str(curY))
-        lastClickX = 0
-        lastClickY = 0
-        def SaveLastClickPos(event):
-            global lastClickX, lastClickY
-            lastClickX = event.x
-            lastClickY = event.y
-        def Dragging(event):
-            x, y = event.x - lastClickX + root1.winfo_x(), event.y - lastClickY + root1.winfo_y()
-            root1.geometry("+%s+%s" % (x , y))
+        def dragenable(s):
+            lastClickX = 0
+            lastClickY = 0
+            def SaveLastClickPos(event):
+                global lastClickX, lastClickY
+                lastClickX = event.x
+                lastClickY = event.y
+                print(lastClickX,lastClickY)
+            def Dragging(event):
+                global lastClickX, lastClickY
+                print(lastClickX,lastClickY)
+                x = event.x - lastClickX + root1.winfo_x()
+                y = event.y - lastClickY + root1.winfo_y()
+                root1.geometry("+%s+%s" % (x , y))
+            root1.bind('<Button-1>', SaveLastClickPos)
+            root1.bind('<B1-Motion>', Dragging)
+        def dragdisable(s):
+            root1.unbind('<Button-1>')
+            root1.unbind('<B1-Motion>')
+        def rgb_to_hex(r, g, b):
+            # helper function
+            def help(c):
+                if c<0: return 0
+                if c>255: return 255
+                return c
+            # make sure that values are within bounds
+            r = help(r)
+            g = help(g)
+            b = help(b)
+            # convert to hex
+            # maintain 2 spaces each
+            val = "%02x%02x%02x" % (r, g, b)
+            # return UpperCase string
+            return val.upper()
+        def colour():
+            global r,g,b
+            global Colour_stuff_DEBUG
+            def log(s):
+                if Colour_stuff_DEBUG == True:
+                    print(s)
+            num_steps = 1800 # arbitrary
+            """ Any Number above 1800 doesnt really change the smoothness of the transition of colours that much """
+            hue = 0.0
+            step_val = 1.0 / num_steps
+            while True:
+                rgb = colorsys.hsv_to_rgb(hue, 1, 1)
+                hue += step_val
+                hue %= 1.0 # cap hue at 1.0
+                r = round(rgb[0] * 255)
+                g = round(rgb[1] * 255)
+                b = round(rgb[2] * 255)
+                log(str(r)+' '+str(g)+' '+str(b))           # Print
+                rgb_ints = (r, g, b)
+                log(rgb_ints)           # Print
+                time.sleep(0.01)
+                log(str(r)+' '+str(g)+' '+str(b))           # Print
+                log(rgb_to_hex(r,g,b))           # Print
+                frame1['highlightbackground']="#"+rgb_to_hex(r,g,b)
         root1 = Toplevel()
-        root1.title("Logitech GHub Battery Viewer")# Names the Tk root window
-        root1.overrideredirect(1) # Removes title bar from window
-        root1.wm_attributes("-topmost", True) # Makes the window always stay on top
-        root1.geometry("+%s+%s" % (0 , 0))
-        root1.bind('<Button-1>', SaveLastClickPos)
-        root1.bind('<B1-Motion>', Dragging)
-        titletext=tk.Label(root1, text="Custom Location")
+        root1.title("Logitech GHub Battery Viewer")        # Names the Tk root window
+        root1.overrideredirect(1)        # Removes title bar from window
+        root1.wm_attributes("-topmost", True)        # Makes the window always stay on top
+        root1.configure(background="#000000")        # Makes background of window black
+        root1.geometry("+%s+%s" % (0 , 0))        # Sets the size of the window to fit everything
+        frame1 = Frame(root1, highlightbackground="#000000", highlightthickness=2, bg='#000000')        # Border for the Custom Location Window
+        frame1.grid(padx=0, pady=0)
+        titletext=Label(frame1, text="Custom Location", fg='#ffffff', bg='#000000')        # Border for the Custom Location Window
         titletext.grid(row = 1, column = 0, pady = 2, columnspan = 4)
-        Xtext=tk.Label(root1, text="X:")
+        Xtext=Label(frame1, text="X:", fg='#ffffff', bg='black')        # X: label for the Custom Location Window
         Xtext.grid(row = 2, column = 1, pady = 2, sticky="e")
-        locXin = Entry(root1, font=('calibre',10,'normal'), show = None)
-        locXin.grid(row = 2, column = 2, pady = 2)
-        Ytext=tk.Label(root1, text="Y:")
+        locXin = Entry(frame1, font=('calibre',10,'normal'), show = None, fg='#ffffff', bg='#000000')        # X value input for the Custom Location Window
+        locXin.grid(row = 2, column = 2, pady = 2, padx = (0,4))
+        Ytext=Label(frame1, text="Y:", fg='#ffffff', bg='#000000')        # Y: label for the Custom Location Window
         Ytext.grid(row = 3, column = 1, pady = 2, sticky="e")
-        locYin = Entry(root1, font=('calibre',10,'normal'), show = None)
-        locYin.grid(row = 3, column = 2, pady = 2)
+        locYin = Entry(frame1, font=('calibre',10,'normal'), show = None, fg='#ffffff', bg='#000000')        # Y value input for the Custom Location Window
+        locYin.grid(row = 3, column = 2, pady = 2, padx = (0,4))
         monitorlist = []
-        for m in get_monitors():
-            print(m)
-            monitorlist.append(m)
-        print(monitorlist)
-        monlistlen = len(monitorlist)
+        for m in get_monitors():        # Gets monitor info
+            log(m)        # Prints monitor info
+            monitorlist.append(m)        # Adds monitor info to a list
+        log(monitorlist)        # Prints the list containing the monitor info
+        monlistlen = len(monitorlist)        # Gets the length of the list containing the monitor info
         level = -1
         newmonlist = []
         list123 = []
         dislist = []
         current = 0
         currentt = -1
-        for i in range(monlistlen):
+        for i in range(monlistlen):        # Repeat the following code as many times as there are items in the list containing the monitor info
             level = level + 1
             dislisttext = "Display " + str(level)
             dislist.append(dislisttext)
-            print(dislisttext)
-            print(dislist)
+            log(dislisttext)           # Print
+            log(dislist)           # Print
             monlistitem = str(monitorlist[level])
             sep = ", width_mm="
-            stripped = monlistitem.split(sep, 1)[0]
-            newmonlist.append(stripped)
-            print(stripped)
-            newitems = re.findall(r'-?\d+', stripped)
-            list123.append(newitems)
-            print(list123)
-        curX = ""
-        curY = ""
-        currentloc=tk.Label(root1, text="Current location: "+"X: "+str(curX)+"  "+"Y: "+str(curY))
-        currentloc.grid(row = 7, column = 0, pady = 2, columnspan = 4)
+            stripped = monlistitem.split(sep, 1)[0]        # Separates an item from the list containing the monitor info and removes any unnecessary data
+            newmonlist.append(stripped)        # Adds the separated necessary data to a list
+            log(stripped)        # Prints the data the necessary data the was spearated
+            newitems = re.findall(r'-?\d+', stripped)      # Extract all numbers into a list
+            list123.append(newitems)        # Adds the extracted data to a list
+            log(list123)        # Prints the list of extracted data
+        loclist=re.findall(r'-?\d+', loc)      # Extract all numbers into a list
+        log(loclist)        # Prints the list of extracted data
+        curX = loclist[2]
+        curY = loclist[3]
+        currentloc=Label(frame1, text="Current location: "+"X : "+str(curX)+"  "+"Y : "+str(curY), fg='#ffffff', bg='#000000')       # Current location label for the Custom Location Window
+        currentloc.grid(row = 7, column = 1, pady = 2, columnspan = 3)
+        ButtonSel=Button(frame1, text="Select", bg="#3c3c3c", fg="white", activebackground="#5a5a5a", command=SelectCom)       # Select button for the Custom Location Window
+        ButtonSel.grid(row = 10, column = 2, pady = 2, padx = 2, sticky="e", columnspan = 2)
+        ButtonClose=Button(frame1, text="Close", bg="#3c3c3c", fg="white", activebackground="#5a5a5a", command=CancelCom)       # Close button for the Custom Location Window
+        ButtonClose.grid(row = 10, column = 1, pady = 2, padx = (3,2), sticky="w", columnspan = 2)
+        keyboard.on_press_key("ctrl", dragenable)       # Detect when the CTRL key is pressed and when it is call dragenable
+        keyboard.on_release_key("ctrl", dragdisable)       # Detect when the CTRL key is released and when it is call dragdisable
+        colour()
         selection()
-        ButtonSel=tk.Button(root1, text="Select", bg="grey", fg="white", command=SelectCom)
-        ButtonSel.grid(row = 10, column = 3, pady = 2, padx = 2, sticky="e")
-        ButtonClose=tk.Button(root1, text="Close", bg="grey", fg="white", command=CancelCom)
-        ButtonClose.grid(row = 10, column = 0, pady = 2, padx = 2, columnspan = 2)
     def hide_window():
         global visibility
         win.withdraw()
@@ -372,19 +438,19 @@ def Refresher():
     if CurrentCharge[1] == "1":
         log("G915: " + charge915 + "🗲")           # Print
         charge915 = "🗲"
-    if loc == "150x150-1839+999":
+    if loc == "150x150-1839+999":      # Right Location
         G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 7))
         G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%", font=("Segoe UI", 7))
     else:
-        if loc == "150x150-3697+999":
+        if loc == "150x150-3697+999":      # Left Location
             G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 7))
             G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%", font=("Segoe UI", 7))
         else:
-            if loc == "150x150-1930+1029":
+            if loc == "150x150-1930+1029":      # Bottom Location
                 G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 9))
                 G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%", font=("Segoe UI", 9))
             else:
-                if loc == "150x150-1930-941":
+                if loc == "150x150-1930-941":      # Top Location
                     G502.configure(text="G"+CURRENTPERCENTAGES[0] + " :"+ charge502 + CURRENTPERCENTAGES[1] + "%", font=("Segoe UI", 9))
                     G915.configure(text="G"+CURRENTPERCENTAGES[-2] + " :"+ charge915 + CURRENTPERCENTAGES[-1] + "%", font=("Segoe UI", 9))
     root.geometry(loc) # Sets the size of the window
