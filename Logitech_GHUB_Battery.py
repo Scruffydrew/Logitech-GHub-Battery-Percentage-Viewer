@@ -24,7 +24,7 @@ def resource_path(relative_path):
             unedited_path = os.path.join(edited_base_path, relative_path)
             edited_path = unedited_path.replace('\\' , '/')
         return edited_path
-DEBUG = True    # Defines what values to use for the location of files 
+DEBUG = False    # Defines what values to use for the location of files 
 """ Set DEBUG to False when freezing code """
 Background_stuff_DEBUG = False    # Debug for Background_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
 GUI_stuff_DEBUG = False    # Debug for GUI_stuff thread, set to True to make all print functions in Background_stuff print to console, set to False if you dont want it to print to console
